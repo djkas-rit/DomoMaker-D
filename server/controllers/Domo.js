@@ -7,7 +7,15 @@ const makerPage = (req, res) => res.render('app');
 const getDomos = async (req, res) => {
   try {
     const query = { owner: req.session.account._id };
-    const docs = await Domo.find(query).select('name age').lean().exec();
+    let docs = await Domo.find(query).select('name age level').lean().exec();
+
+    // error handling in case attributes are not set
+    docs = docs.map((domo) => {
+      if (!domo.name) { domo.name = '???'; }
+      if (!domo.age) { domo.age = '???'; }
+      if (!domo.level) { domo.level = 'Unknown'; }
+      return domo;
+    });
 
     return res.json({ domos: docs });
   } catch (err) {
@@ -17,20 +25,21 @@ const getDomos = async (req, res) => {
 };
 
 const makeDomo = async (req, res) => {
-  if (!req.body.name || !req.body.age) {
-    return res.status(400).json({ error: 'Both name and age are required!' });
+  if (!req.body.name || !req.body.age || !req.body.level) {
+    return res.status(400).json({ error: 'Name, age, and level are required!' });
   }
 
   const domoData = {
     name: req.body.name,
     age: req.body.age,
+    level: req.body.level,
     owner: req.session.account._id,
   };
 
   try {
     const newDomo = new Domo(domoData);
     await newDomo.save();
-    return res.status(201).json({ name: newDomo.name, age: newDomo.age });
+    return res.status(201).json({ name: newDomo.name, age: newDomo.age, level: newDomo.level });
   } catch (err) {
     console.log(err);
     if (err.code === 11000) {
