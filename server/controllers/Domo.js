@@ -9,13 +9,12 @@ const getDomos = async (req, res) => {
     const query = { owner: req.session.account._id };
     let docs = await Domo.find(query).select('name age level').lean().exec();
 
-    // error handling in case attributes are not set
-    docs = docs.map((domo) => {
-      if (!domo.name) { domo.name = '???'; }
-      if (!domo.age) { domo.age = '???'; }
-      if (!domo.level) { domo.level = 'Unknown'; }
-      return domo;
-    });
+    // assign placeholder values for missing fields
+    docs = docs.map((doc) => ({
+      name: doc.name || 'Unknown Domo',
+      age: doc.age || '???',
+      level: doc.level || 'Unknown',
+    }));
 
     return res.json({ domos: docs });
   } catch (err) {

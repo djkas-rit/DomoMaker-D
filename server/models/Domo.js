@@ -35,7 +35,7 @@ const DomoSchema = new mongoose.Schema({
 DomoSchema.statics.toAPI = (doc) => ({
   name: doc.name,
   age: doc.age,
-  level: doc.level
+  level: doc.level,
 });
 
 const DomoModel = mongoose.model('Domo', DomoSchema);
